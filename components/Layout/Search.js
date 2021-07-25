@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { List, Image, Search } from "semantic-ui-react";
 import axios from "axios";
 import cookie from "js-cookie";
@@ -11,8 +11,9 @@ function SearchComponent() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
 
-  const handleChange = async e => {
+  const handleChange = async (e) => {
     const { value } = e.target;
+    if (value.length === 0) return setText(value);
     setText(value);
     setLoading(true);
 
@@ -23,12 +24,15 @@ function SearchComponent() {
 
       const res = await axios.get(`${baseUrl}/api/search/${value}`, {
         headers: { Authorization: token },
-        cancelToken: new CancelToken(canceler => {
+        cancelToken: new CancelToken((canceler) => {
           cancel = canceler;
-        })
+        }),
       });
 
-      if (res.data.length === 0) return setLoading(false);
+      if (res.data.length === 0) {
+        results.length > 0 && setResults([]);
+        return setLoading(false);
+      }
 
       setResults(res.data);
     } catch (error) {
@@ -37,6 +41,9 @@ function SearchComponent() {
 
     setLoading(false);
   };
+  useEffect(() => {
+    if (text.length === 0 && loading) setLoading(false);
+  }, [text]);
 
   return (
     <Search
@@ -50,7 +57,7 @@ function SearchComponent() {
       resultRenderer={ResultRenderer}
       results={results}
       onSearchChange={handleChange}
-      minCharacters={1}
+      minCharacters={2}
       onResultSelect={(e, data) => Router.push(`/${data.result.username}`)}
     />
   );

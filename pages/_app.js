@@ -10,6 +10,7 @@ import "semantic-ui-css/semantic.min.css";
 class MyApp extends App {
   static async getInitialProps({ Component, ctx }) {
     const { token } = parseCookies(ctx);
+    console.log('_app.js', token)
     let pageProps = {};
 
     const protectedRoutes = ctx.pathname === "/" || ctx.pathname === "/[username]";
